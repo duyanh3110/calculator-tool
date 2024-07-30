@@ -23,6 +23,14 @@ export default {
             wage: 0
         };
     },
+    watch: {
+        serviceList: {
+            handler(newValue) {
+                console.log('WATCHER ::: ', newValue);
+            },
+            deep: true
+        }
+    },
     methods: {
         setDateField() {
             const today = new Date();
@@ -40,7 +48,7 @@ export default {
                 .get(`${runtimeConfig('VUE_APP_API_PATH')}`)
                 .then((response) => {
                     if (response.data.length > 0) {
-                        console.log('response.data');
+                        console.log('response.data :: ', response.data);
                         this.serviceList = response.data;
                         this.calculateIncome();
                     }
