@@ -40,6 +40,7 @@ export default {
                 .get(`${runtimeConfig('VUE_APP_API_PATH')}`)
                 .then((response) => {
                     if (response.data.length > 0) {
+                        console.log('response.data');
                         this.serviceList = response.data;
                         this.calculateIncome();
                     }
@@ -145,7 +146,7 @@ export default {
             </button>
         </div>
 
-        <div class="list max-w-xs mx-auto" id="serviceList">
+        <div class="list max-w-xs mx-auto" v-if="serviceList.length > 0">
             <h2 class="font-bold text-center">Service List</h2>
             <ol class="list-inside list-decimal">
                 <li v-for="service in serviceList" :key="service.name">
@@ -155,7 +156,10 @@ export default {
             </ol>
         </div>
 
-        <div class="result max-w-xs mx-auto mt-5 text-center">
+        <div
+            class="result max-w-xs mx-auto mt-5 text-center"
+            v-if="serviceList.length > 0"
+        >
             <h2 class="font-bold">Overall</h2>
             <div class="total">
                 <span class="font-bold">Total: </span>
