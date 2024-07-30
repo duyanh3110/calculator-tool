@@ -1,7 +1,6 @@
 <script>
 import { COMMISSION_RATE, TAX_RATE, TIMMA_RATE } from '@/constants';
 import axios from 'axios';
-import runtimeConfig from '@/utils/getRuntimeConfig';
 
 export default {
     name: 'HomeView',
@@ -44,9 +43,8 @@ export default {
             this.dateField = today.toLocaleDateString('en-US', options);
         },
         fetchData() {
-            console.log('CONFIG ::: ', runtimeConfig('VUE_APP_API_PATH'));
             axios
-                .get(`${runtimeConfig('VUE_APP_API_PATH')}`)
+                .get(`${import.meta.env.VUE_APP_API_PATH}`)
                 .then((response) => {
                     if (response.data.length > 0) {
                         console.log('response.data :: ', response.data);
@@ -61,7 +59,7 @@ export default {
         handlePostRequest(newService) {
             const $ = this;
             axios
-                .post(`${runtimeConfig('VUE_APP_API_PATH')}`, newService)
+                .post(`${import.meta.env.VUE_APP_API_PATH}`, newService)
                 .then(function () {
                     $.fetchData();
                 })
