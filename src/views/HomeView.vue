@@ -44,6 +44,7 @@ export default {
             this.dateField = today.toLocaleDateString('en-US', options);
         },
         fetchData() {
+            console.log('CONFIG ::: ', runtimeConfig('VUE_APP_API_PATH'));
             axios
                 .get(`${runtimeConfig('VUE_APP_API_PATH')}`)
                 .then((response) => {
