@@ -45,7 +45,7 @@ export default {
         fetchData() {
             console.log('URL ::: ', import.meta.env);
             axios
-                .get(`${import.meta.env.VUE_APP_API_PATH}`)
+                .get(`${process.env.VUE_APP_API_PATH}`)
                 .then((response) => {
                     if (response.data.length > 0) {
                         console.log('response.data :: ', response.data);
@@ -60,7 +60,7 @@ export default {
         handlePostRequest(newService) {
             const $ = this;
             axios
-                .post(`${import.meta.env.VUE_APP_API_PATH}`, newService)
+                .post(`${process.env.VUE_APP_API_PATH}`, newService)
                 .then(function () {
                     $.fetchData();
                 })
