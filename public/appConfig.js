@@ -1,3 +1,3 @@
 document.$config = {
-    VUE_APP_API_PATH: 'http://localhost:3000/v1/api/services'
+    VUE_APP_API_PATH: 'https://calculator-tool-be.onrender.com/v1/api/services'
 };
