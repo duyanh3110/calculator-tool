@@ -43,6 +43,7 @@ export default {
             this.dateField = today.toLocaleDateString('en-US', options);
         },
         fetchData() {
+            console.log('URL ::: ', import.meta.env);
             axios
                 .get(`${import.meta.env.VUE_APP_API_PATH}`)
                 .then((response) => {
