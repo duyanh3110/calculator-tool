@@ -43,9 +43,8 @@ export default {
             this.dateField = today.toLocaleDateString('en-US', options);
         },
         fetchData() {
-            console.log('URL ::: ', import.meta.env);
             axios
-                .get(`${process.env.VUE_APP_API_PATH}`)
+                .get(`https://calculator-tool-be.onrender.com/v1/api/services`)
                 .then((response) => {
                     if (response.data.length > 0) {
                         console.log('response.data :: ', response.data);
@@ -60,7 +59,10 @@ export default {
         handlePostRequest(newService) {
             const $ = this;
             axios
-                .post(`${process.env.VUE_APP_API_PATH}`, newService)
+                .post(
+                    `https://calculator-tool-be.onrender.com/v1/api/services`,
+                    newService
+                )
                 .then(function () {
                     $.fetchData();
                 })
