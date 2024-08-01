@@ -9,6 +9,11 @@ export default {
         this.setDateField();
         this.fetchData();
     },
+    computed: {
+        apiUrl() {
+            return `${import.meta.env === 'dev' ? import.meta.env.VITE_VUE_APP_API_DEV : import.meta.env.VITE_VUE_APP_API}`;
+        }
+    },
     data() {
         return {
             dateField: '',
@@ -36,11 +41,11 @@ export default {
             this.dateField = today.toLocaleDateString('en-US', options);
         },
         async checkData() {
-            await axios.get(`${import.meta.env.VITE_VUE_APP_API_DEV}/files`);
+            await axios.get(`${this.apiUrl}/files`);
         },
         fetchData() {
             axios
-                .get(`${import.meta.env.VITE_VUE_APP_API_DEV}/services`)
+                .get(`${this.apiUrl}/services`)
                 .then((response) => {
                     this.serviceList = response.data;
                     this.calculateIncome();
@@ -52,10 +57,7 @@ export default {
         handlePostRequest(newService) {
             const $ = this;
             axios
-                .post(
-                    `${import.meta.env.VITE_VUE_APP_API_DEV}/services`,
-                    newService
-                )
+                .post(`${this.apiUrl}/services`, newService)
                 .then(function () {
                     $.fetchData();
                 })
@@ -93,9 +95,7 @@ export default {
         deleteService(id) {
             const $ = this;
             axios
-                .delete(
-                    `${import.meta.env.VITE_VUE_APP_API_DEV}/services/${id}`
-                )
+                .delete(`${this.apiUrl}/services/${id}`)
                 .then(() => {
                     $.fetchData();
                 })
