@@ -5,6 +5,7 @@ import axios from 'axios';
 export default {
     name: 'HomeView',
     mounted() {
+        this.checkData();
         this.setDateField();
         this.fetchData();
     },
@@ -13,22 +14,14 @@ export default {
             dateField: '',
             serviceName: '',
             servicePrice: '',
+            extraPrice: '',
             isTimmaCustomer: false,
             serviceList: [],
             total: 0,
-            income: 0,
             tax: 0,
             grossWage: 0,
             wage: 0
         };
-    },
-    watch: {
-        serviceList: {
-            handler(newValue) {
-                console.log('WATCHER ::: ', newValue);
-            },
-            deep: true
-        }
     },
     methods: {
         setDateField() {
@@ -42,15 +35,15 @@ export default {
 
             this.dateField = today.toLocaleDateString('en-US', options);
         },
+        async checkData() {
+            await axios.get(`${import.meta.env.VITE_VUE_APP_API_DEV}/files`);
+        },
         fetchData() {
             axios
-                .get(`https://calculator-tool-be.onrender.com/v1/api/services`)
+                .get(`${import.meta.env.VITE_VUE_APP_API_DEV}/services`)
                 .then((response) => {
-                    if (response.data.length > 0) {
-                        console.log('response.data :: ', response.data);
-                        this.serviceList = response.data;
-                        this.calculateIncome();
-                    }
+                    this.serviceList = response.data;
+                    this.calculateIncome();
                 })
                 .catch((error) => {
                     console.error(error);
@@ -60,7 +53,7 @@ export default {
             const $ = this;
             axios
                 .post(
-                    `https://calculator-tool-be.onrender.com/v1/api/services`,
+                    `${import.meta.env.VITE_VUE_APP_API_DEV}/services`,
                     newService
                 )
                 .then(function () {
@@ -71,14 +64,20 @@ export default {
                 });
         },
         addService() {
-            if (this.serviceName == '' || this.servicePrice == '') {
+            if (this.serviceName === '' || this.servicePrice === '') {
                 alert('Please enter both service name and price.');
                 return;
             }
 
             const newService = {
                 name: this.serviceName,
-                price: parseInt(this.servicePrice),
+                price: this.isTimmaCustomer
+                    ? parseFloat(this.servicePrice) * (1 - TIMMA_RATE)
+                    : parseFloat(this.servicePrice) +
+                      parseFloat(this.extraPrice),
+                extraPrice: parseFloat(
+                    this.extraPrice === '' ? 0 : this.extraPrice
+                ),
                 isTimmaCustomer: this.isTimmaCustomer
             };
 
@@ -89,31 +88,35 @@ export default {
         clearInput() {
             this.serviceName = '';
             this.servicePrice = '';
+            this.extraPrice = '';
+        },
+        deleteService(id) {
+            const $ = this;
+            axios
+                .delete(
+                    `${import.meta.env.VITE_VUE_APP_API_DEV}/services/${id}`
+                )
+                .then(() => {
+                    $.fetchData();
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
         },
         calculateIncome() {
             this.total = 0;
-            this.income = 0;
             for (let service of this.serviceList) {
-                this.total += service.price;
-                if (service.isTimmaCustomer) {
-                    this.income += service.price * (1 - TIMMA_RATE);
-                } else {
-                    this.income += service.price;
-                }
+                this.total = (this.total + service.price).toFixed(2);
             }
 
-            this.calculateWage(this.income);
+            this.calculateWage(this.total);
         },
         calculateWage(income) {
-            if (typeof income !== 'number') {
-                income = parseInt(income);
-            }
-
             const personalIncome = income * COMMISSION_RATE;
 
-            this.wage = (personalIncome * (1 - TAX_RATE)).toFixed(2);
-            this.tax = (personalIncome * TAX_RATE).toFixed(2);
-            this.grossWage = Number(this.wage) + Number(this.tax);
+            this.grossWage = personalIncome.toFixed(2);
+            this.tax = (personalIncome - personalIncome / TAX_RATE).toFixed(2);
+            this.wage = (this.grossWage - this.tax).toFixed(2);
         }
     }
 };
@@ -148,9 +151,18 @@ export default {
                 />
                 <label for="checkbox" class="font-bold">Timma</label>
             </div>
+            <label for="servicePrice" class="font-bold" v-if="isTimmaCustomer"
+                >Extra price</label
+            >
+            <input
+                v-if="isTimmaCustomer"
+                type="text"
+                v-model="extraPrice"
+                class="border border-black rounded p-2"
+            />
             <button
                 @click="addService"
-                class="border border-white rounded-md bg-indigo-500 text-white mt-2 mb-5 py-3 text-xl text-bold uppercase"
+                class="border border-white rounded-md bg-indigo-500 text-white my-5 py-3 text-xl text-bold uppercase"
             >
                 Add Service
             </button>
@@ -158,10 +170,24 @@ export default {
 
         <div class="list max-w-xs mx-auto" v-if="serviceList.length > 0">
             <h2 class="font-bold text-center">Service List</h2>
-            <ol class="list-inside list-decimal">
-                <li v-for="service in serviceList" :key="service.name">
-                    {{ service.isTimmaCustomer ? 'Timma - ' : '' }}
-                    {{ service.name }}: {{ service.price }}$
+            <ol>
+                <li
+                    v-for="(service, index) in serviceList"
+                    :key="service.id"
+                    class="flex justify-between items-center border-black border-t-2 last:border-b-2 p-1"
+                >
+                    <p>
+                        {{ index + 1 }}.
+                        {{ service.isTimmaCustomer ? 'Timma - ' : ''
+                        }}{{ service.name }}: {{ service.price }}$ +
+                        {{ service.extraPrice }}$
+                    </p>
+                    <button
+                        class="border bg-orange-800 rounded text-bold text-white uppercase p-2"
+                        @click="deleteService(service.id)"
+                    >
+                        Delete
+                    </button>
                 </li>
             </ol>
         </div>
@@ -174,10 +200,6 @@ export default {
             <div class="total">
                 <span class="font-bold">Total: </span>
                 <span>{{ total }}$</span>
-            </div>
-            <div class="income">
-                <span class="font-bold">Income: </span>
-                <span>{{ income }}$</span>
             </div>
             <div class="tax">
                 <span class="font-bold">Wage before tax: </span>
