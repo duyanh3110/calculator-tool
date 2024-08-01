@@ -8,7 +8,6 @@ export default {
         this.checkData();
         this.setDateField();
         this.fetchData();
-        console.log('METADATA ::: ', import.meta.env);
     },
     computed: {
         apiUrl() {
