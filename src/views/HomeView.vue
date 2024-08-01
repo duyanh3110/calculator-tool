@@ -8,11 +8,11 @@ export default {
         this.checkData();
         this.setDateField();
         this.fetchData();
-        console.log('METADATA ::: ', import.meta);
+        console.log('METADATA ::: ', import.meta.env);
     },
     computed: {
         apiUrl() {
-            return `${import.meta.env === 'dev' ? import.meta.env.VITE_VUE_APP_API_DEV : import.meta.env.VITE_VUE_APP_API}`;
+            return `${import.meta.env.DEV ? import.meta.env.VITE_VUE_APP_API_DEV : import.meta.env.VITE_VUE_APP_API}`;
         }
     },
     data() {
