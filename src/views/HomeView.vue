@@ -12,6 +12,11 @@ export default {
     computed: {
         apiUrl() {
             return `${import.meta.env.DEV ? import.meta.env.VITE_VUE_APP_API_DEV : import.meta.env.VITE_VUE_APP_API}`;
+        },
+        netPrice() {
+            return this.isTimmaCustomer
+                ? parseFloat(this.servicePrice) * (1 - TIMMA_RATE)
+                : parseFloat(this.servicePrice);
         }
     },
     data() {
@@ -76,10 +81,7 @@ export default {
 
             const newService = {
                 serviceName: this.serviceName,
-                servicePrice: this.isTimmaCustomer
-                    ? parseFloat(this.servicePrice) * (1 - TIMMA_RATE)
-                    : parseFloat(this.servicePrice) +
-                      parseFloat(this.extraPrice),
+                servicePrice: this.servicePrice,
                 extraName: this.extraName,
                 extraPrice: parseFloat(
                     this.extraPrice === '' ? 0 : this.extraPrice
@@ -245,7 +247,10 @@ export default {
                         {{ index + 1 }}.
                         {{ service.isTimmaCustomer ? 'Timma - ' : ''
                         }}{{ service.serviceName }}: {{ service.servicePrice }}$
-                        - {{ service.extraName }}: {{ service.extraPrice }}$
+                        - {{ service.extraName }}: {{ service.extraPrice }}$ -
+                        NET: {{ netPrice + service.extraPrice }}$({{
+                            netPrice
+                        }}$ + {{ service.extraPrice }})
                     </p>
                     <button
                         class="border bg-orange-800 rounded text-bold text-white uppercase p-2"
