@@ -12,11 +12,6 @@ export default {
     computed: {
         apiUrl() {
             return `${import.meta.env.DEV ? import.meta.env.VITE_VUE_APP_API_DEV : import.meta.env.VITE_VUE_APP_API}`;
-        },
-        netPrice() {
-            return this.isTimmaCustomer
-                ? parseFloat(this.servicePrice) * (1 - TIMMA_RATE)
-                : parseFloat(this.servicePrice);
         }
     },
     data() {
@@ -36,6 +31,11 @@ export default {
         };
     },
     methods: {
+        getNetPrice(isTimmaCustomer, price) {
+            return isTimmaCustomer
+                ? parseFloat(price) * (1 - TIMMA_RATE)
+                : parseFloat(price);
+        },
         setDateField() {
             const today = new Date();
             const options = {
@@ -115,7 +115,14 @@ export default {
             this.total = 0;
             for (let service of this.serviceList) {
                 this.total = (
-                    this.total + Number(service.servicePrice)
+                    this.total +
+                    Number(
+                        this.getNetPrice(
+                            service.isTimmaCustomer,
+                            service.servicePrice
+                        )
+                    ) +
+                    Number(service.extraPrice)
                 ).toFixed(2);
             }
 
@@ -248,9 +255,20 @@ export default {
                         {{ service.isTimmaCustomer ? 'Timma - ' : ''
                         }}{{ service.serviceName }}: {{ service.servicePrice }}$
                         - {{ service.extraName }}: {{ service.extraPrice }}$ -
-                        Total: {{ this.netPrice + service.extraPrice }}$({{
-                            this.netPrice
-                        }}$ + {{ service.extraPrice }})
+                        Total:
+                        {{
+                            Number(
+                                getNetPrice(
+                                    service.isTimmaCustomer,
+                                    service.servicePrice
+                                )
+                            ) + Number(service.extraPrice)
+                        }}$({{
+                            getNetPrice(
+                                service.isTimmaCustomer,
+                                service.servicePrice
+                            )
+                        }}$ + {{ service.extraPrice }}$)
                     </p>
                     <button
                         class="border bg-orange-800 rounded text-bold text-white uppercase p-2"
