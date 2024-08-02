@@ -248,8 +248,8 @@ export default {
                         {{ service.isTimmaCustomer ? 'Timma - ' : ''
                         }}{{ service.serviceName }}: {{ service.servicePrice }}$
                         - {{ service.extraName }}: {{ service.extraPrice }}$ -
-                        Total: {{ netPrice + service.extraPrice }}$({{
-                            netPrice
+                        Total: {{ this.netPrice + service.extraPrice }}$({{
+                            this.netPrice
                         }}$ + {{ service.extraPrice }})
                     </p>
                     <button
