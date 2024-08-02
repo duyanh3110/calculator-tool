@@ -248,7 +248,7 @@ export default {
                         {{ service.isTimmaCustomer ? 'Timma - ' : ''
                         }}{{ service.serviceName }}: {{ service.servicePrice }}$
                         - {{ service.extraName }}: {{ service.extraPrice }}$ -
-                        NET: {{ netPrice + service.extraPrice }}$({{
+                        Total: {{ netPrice + service.extraPrice }}$({{
                             netPrice
                         }}$ + {{ service.extraPrice }})
                     </p>
