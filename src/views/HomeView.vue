@@ -114,16 +114,13 @@ export default {
         calculateIncome() {
             this.total = 0;
             for (let service of this.serviceList) {
-                this.total = (
+                this.total =
                     this.total +
-                    Number(
-                        this.getNetPrice(
-                            service.isTimmaCustomer,
-                            service.servicePrice
-                        )
+                    this.getNetPrice(
+                        service.isTimmaCustomer,
+                        service.servicePrice
                     ) +
-                    Number(service.extraPrice)
-                ).toFixed(2);
+                    Number(service.extraPrice);
             }
 
             this.calculateWage(this.total);
