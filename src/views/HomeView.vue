@@ -19,6 +19,7 @@ export default {
             dateField: '',
             serviceName: '',
             servicePrice: '',
+            extraName: '',
             extraPrice: '',
             isTimmaCustomer: false,
             serviceList: [],
@@ -79,6 +80,7 @@ export default {
                     ? parseFloat(this.servicePrice) * (1 - TIMMA_RATE)
                     : parseFloat(this.servicePrice) +
                       parseFloat(this.extraPrice),
+                extraName: this.extraName,
                 extraPrice: parseFloat(
                     this.extraPrice === '' ? 0 : this.extraPrice
                 ),
@@ -157,6 +159,15 @@ export default {
                 />
                 <label for="checkbox" class="font-bold">Timma</label>
             </div>
+            <label for="serviceName" class="font-bold" v-if="isTimmaCustomer"
+                >Extra Service</label
+            >
+            <input
+                type="text"
+                v-if="isTimmaCustomer"
+                v-model="extraName"
+                class="border border-black rounded p-2"
+            />
             <label for="servicePrice" class="font-bold" v-if="isTimmaCustomer"
                 >Extra price</label
             >
@@ -234,7 +245,7 @@ export default {
                         {{ index + 1 }}.
                         {{ service.isTimmaCustomer ? 'Timma - ' : ''
                         }}{{ service.serviceName }}: {{ service.servicePrice }}$
-                        + {{ service.extraPrice }}$
+                        - {{ service.extraName }}: {{ service.extraPrice }}$
                     </p>
                     <button
                         class="border bg-orange-800 rounded text-bold text-white uppercase p-2"
