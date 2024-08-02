@@ -5,7 +5,7 @@ import axios from 'axios';
 export default {
     name: 'HomeView',
     mounted() {
-        this.checkData();
+        this.isLoading = true;
         this.setDateField();
         this.fetchData();
     },
@@ -25,7 +25,8 @@ export default {
             total: 0,
             tax: 0,
             grossWage: 0,
-            wage: 0
+            wage: 0,
+            isLoading: false
         };
     },
     methods: {
@@ -40,9 +41,6 @@ export default {
 
             this.dateField = today.toLocaleDateString('en-US', options);
         },
-        async checkData() {
-            await axios.get(`${this.apiUrl}/files`);
-        },
         fetchData() {
             axios
                 .get(`${this.apiUrl}/services`)
@@ -52,9 +50,13 @@ export default {
                 })
                 .catch((error) => {
                     console.error(error);
+                })
+                .finally(() => {
+                    this.isLoading = false;
                 });
         },
         handlePostRequest(newService) {
+            this.isLoading = true;
             const $ = this;
             axios
                 .post(`${this.apiUrl}/services`, newService)
@@ -72,8 +74,8 @@ export default {
             }
 
             const newService = {
-                name: this.serviceName,
-                price: this.isTimmaCustomer
+                serviceName: this.serviceName,
+                servicePrice: this.isTimmaCustomer
                     ? parseFloat(this.servicePrice) * (1 - TIMMA_RATE)
                     : parseFloat(this.servicePrice) +
                       parseFloat(this.extraPrice),
@@ -91,8 +93,10 @@ export default {
             this.serviceName = '';
             this.servicePrice = '';
             this.extraPrice = '';
+            this.isTimmaCustomer = false;
         },
         deleteService(id) {
+            this.isLoading = true;
             const $ = this;
             axios
                 .delete(`${this.apiUrl}/services/${id}`)
@@ -106,7 +110,9 @@ export default {
         calculateIncome() {
             this.total = 0;
             for (let service of this.serviceList) {
-                this.total = (this.total + service.price).toFixed(2);
+                this.total = (
+                    this.total + Number(service.servicePrice)
+                ).toFixed(2);
             }
 
             this.calculateWage(this.total);
@@ -162,29 +168,77 @@ export default {
             />
             <button
                 @click="addService"
-                class="border border-white rounded-md bg-indigo-500 text-white my-5 py-3 text-xl text-bold uppercase"
+                class="border border-white rounded-md bg-indigo-500 text-white my-5 py-3 text-xl text-bold uppercase flex justify-center"
             >
-                Add Service
+                <svg
+                    v-if="isLoading"
+                    class="animate-spin h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        fill="currentColor"
+                        d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
+                        opacity="0.25"
+                    />
+                    <path
+                        fill="currentColor"
+                        d="M10.72,19.9a8,8,0,0,1-6.5-9.79A7.77,7.77,0,0,1,10.4,4.16a8,8,0,0,1,9.49,6.52A1.54,1.54,0,0,0,21.38,12h.13a1.37,1.37,0,0,0,1.38-1.54,11,11,0,1,0-12.7,12.39A1.54,1.54,0,0,0,12,21.34h0A1.47,1.47,0,0,0,10.72,19.9Z"
+                    >
+                        <animateTransform
+                            attributeName="transform"
+                            dur="0.75s"
+                            repeatCount="indefinite"
+                            type="rotate"
+                            values="0 12 12;360 12 12"
+                        />
+                    </path>
+                </svg>
+                <span v-else>Add Service</span>
             </button>
         </div>
 
-        <div class="list max-w-xs mx-auto" v-if="serviceList.length > 0">
+        <div class="list max-w-xs mx-auto">
             <h2 class="font-bold text-center">Service List</h2>
-            <ol>
+            <svg
+                v-if="isLoading"
+                class="animate-spin h-20 w-20 mx-auto mt-2"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    fill="currentColor"
+                    d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
+                    opacity="0.25"
+                />
+                <path
+                    fill="currentColor"
+                    d="M10.72,19.9a8,8,0,0,1-6.5-9.79A7.77,7.77,0,0,1,10.4,4.16a8,8,0,0,1,9.49,6.52A1.54,1.54,0,0,0,21.38,12h.13a1.37,1.37,0,0,0,1.38-1.54,11,11,0,1,0-12.7,12.39A1.54,1.54,0,0,0,12,21.34h0A1.47,1.47,0,0,0,10.72,19.9Z"
+                >
+                    <animateTransform
+                        attributeName="transform"
+                        dur="0.75s"
+                        repeatCount="indefinite"
+                        type="rotate"
+                        values="0 12 12;360 12 12"
+                    />
+                </path>
+            </svg>
+            <ol v-else>
                 <li
                     v-for="(service, index) in serviceList"
-                    :key="service.id"
+                    :key="service._id"
                     class="flex justify-between items-center border-black border-t-2 last:border-b-2 p-1"
                 >
                     <p>
                         {{ index + 1 }}.
                         {{ service.isTimmaCustomer ? 'Timma - ' : ''
-                        }}{{ service.name }}: {{ service.price }}$ +
-                        {{ service.extraPrice }}$
+                        }}{{ service.serviceName }}: {{ service.servicePrice }}$
+                        + {{ service.extraPrice }}$
                     </p>
                     <button
                         class="border bg-orange-800 rounded text-bold text-white uppercase p-2"
-                        @click="deleteService(service.id)"
+                        @click="deleteService(service._id)"
                     >
                         Delete
                     </button>
@@ -192,10 +246,7 @@ export default {
             </ol>
         </div>
 
-        <div
-            class="result max-w-xs mx-auto mt-5 text-center"
-            v-if="serviceList.length > 0"
-        >
+        <div class="result max-w-xs mx-auto mt-5 text-center" v-if="!isLoading">
             <h2 class="font-bold">Overall</h2>
             <div class="total">
                 <span class="font-bold">Total: </span>
