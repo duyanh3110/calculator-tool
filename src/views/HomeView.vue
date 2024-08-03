@@ -1,6 +1,7 @@
 <script>
 import { COMMISSION_RATE, TAX_RATE, TIMMA_RATE } from '@/constants';
 import axios from 'axios';
+import { formatDate } from '@/utils';
 
 export default {
     name: 'HomeView',
@@ -12,6 +13,11 @@ export default {
     computed: {
         apiUrl() {
             return `${import.meta.env.DEV ? import.meta.env.VITE_VUE_APP_API_DEV : import.meta.env.VITE_VUE_APP_API}`;
+        }
+    },
+    watch: {
+        dateValue() {
+            this.fetchData();
         }
     },
     data() {
@@ -27,7 +33,9 @@ export default {
             tax: 0,
             grossWage: 0,
             wage: 0,
-            isLoading: false
+            isLoading: false,
+            dateValue: new Date(),
+            isDatePickerOpen: false
         };
     },
     methods: {
@@ -49,7 +57,11 @@ export default {
         },
         fetchData() {
             axios
-                .get(`${this.apiUrl}/services`)
+                .get(`${this.apiUrl}/services`, {
+                    params: {
+                        dateValue: formatDate(this.dateValue)
+                    }
+                })
                 .then((response) => {
                     this.serviceList = response.data;
                     this.calculateIncome();
@@ -86,7 +98,8 @@ export default {
                 extraPrice: parseFloat(
                     this.extraPrice === '' ? 0 : this.extraPrice
                 ),
-                isTimmaCustomer: this.isTimmaCustomer
+                isTimmaCustomer: this.isTimmaCustomer,
+                dateValue: formatDate(this.dateValue)
             };
 
             this.handlePostRequest(newService);
@@ -144,6 +157,31 @@ export default {
                 <span class="font-bold">Today: </span>
                 <span>{{ dateField }}</span>
             </h3>
+            <button
+                @click="isDatePickerOpen = !isDatePickerOpen"
+                class="border border-white rounded-md bg-indigo-500 text-white my-5 py-3 text-xl uppercase flex justify-center"
+            >
+                Select Date
+            </button>
+            <VDatePicker
+                v-if="isDatePickerOpen"
+                v-model="dateValue"
+                mode="date"
+                class="mx-auto mb-5"
+                :max-date="new Date()"
+                @update:modelValue="isDatePickerOpen = false"
+            >
+                <template #footer>
+                    <div class="w-full px-3 pb-3">
+                        <button
+                            class="bg-indigo-500 hover:bg-indigo-700 text-white w-full px-3 py-1 rounded-md"
+                            @click="dateValue = new Date()"
+                        >
+                            Today
+                        </button>
+                    </div>
+                </template>
+            </VDatePicker>
 
             <label for="serviceName" class="font-bold">Name</label>
             <input
@@ -165,7 +203,10 @@ export default {
                 />
                 <label for="checkbox" class="font-bold">Timma</label>
             </div>
-            <label for="serviceName" class="font-bold" v-if="isTimmaCustomer"
+            <label
+                for="serviceName"
+                class="font-bold mt-2"
+                v-if="isTimmaCustomer"
                 >Extra Service</label
             >
             <input
@@ -174,7 +215,10 @@ export default {
                 v-model="extraName"
                 class="border border-black rounded p-2"
             />
-            <label for="servicePrice" class="font-bold" v-if="isTimmaCustomer"
+            <label
+                for="servicePrice"
+                class="font-bold mt-2"
+                v-if="isTimmaCustomer"
                 >Extra price</label
             >
             <input
@@ -185,7 +229,7 @@ export default {
             />
             <button
                 @click="addService"
-                class="border border-white rounded-md bg-indigo-500 text-white my-5 py-3 text-xl text-bold uppercase flex justify-center"
+                class="border border-white rounded-md bg-indigo-500 text-white my-5 py-3 text-xl uppercase flex justify-center"
             >
                 <svg
                     v-if="isLoading"
